@@ -9,6 +9,7 @@ on:
     branches:
       - master
       - main
+  workflow_dispatch:   # 👈 allows manual trigger from GitHub UI
 
 jobs:
   test:
