@@ -9,7 +9,7 @@ on:
     branches:
       - master
       - main
-  workflow_dispatch: # 👈 allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,7 +18,7 @@ jobs:
       image: lini007/playwright-allure:latest
       options: --ipc=host
     env:
-      HOME: /root
+      HOME: /root   # Fix for Firefox HOME issue
 
     steps:
       - name: Checkout code
@@ -34,10 +34,25 @@ jobs:
         run: npx playwright test --reporter=line,allure-playwright
 
       - name: Generate Allure report
-        run: allure generate ./allure-results -o ./allure-report --clean
+        run: npx allure generate ./allure-results -o ./allure-report --clean
 
-      - name: Upload Allure report as artifact
-        uses: actions/upload-artifact@v4
+      # Upload Allure report for GitHub Pages
+      - name: Upload Allure report artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: allure-report
           path: allure-report
+
+  # Deploy job for GitHub Pages
+  deploy:
+    needs: test
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
