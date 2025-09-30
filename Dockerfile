@@ -6,18 +6,21 @@ RUN apt-get update && \
     apt-get install -y openjdk-17-jdk && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Allure CLI globally
+RUN npm install -g allure-commandline --save-dev
+
+# Install Playwright browsers inside the image
+RUN npx playwright install --with-deps
+
 # Set JAVA_HOME
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH="$JAVA_HOME/bin:${PATH}"
 
 # Verify installations (optional)
-RUN java -version && node -v && npx playwright --version
+RUN java -version && node -v && npx playwright --version && allure --version
 
 # Set default working directory
 WORKDIR /app
-
-# Copy project files if you want to package code into the image
-# COPY . .
 
 # Default command
 CMD ["bash"]
