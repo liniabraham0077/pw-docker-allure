@@ -15,7 +15,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: lini007/playwright-java:latest
+      image: lini007/playwright-allure:latest
       options: --ipc=host
 
     steps:

@@ -1,29 +1,25 @@
-# Start from official Playwright image (with Node & browsers preinstalled)
-FROM mcr.microsoft.com/playwright:v1.53.0-jammy
+# Base Playwright image (Ubuntu 22.04 Jammy, v1.55.0)
+FROM mcr.microsoft.com/playwright:v1.55.0-jammy
 
-# Install OpenJDK 11
+# Install Java 17 JDK
 RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk && \
-    rm -rf /var/lib/apt/lists/* && \
-    update-ca-certificates -f
+    apt-get install -y openjdk-17-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-arm64/
-
-# Set PATH to include JAVA_HOME/bin
-ENV PATH $JAVA_HOME/bin:$PATH
+# Dynamically resolve JAVA_HOME and persist it for all shells
+RUN export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))) && \
+    echo "export JAVA_HOME=$JAVA_HOME" >> /etc/profile && \
+    echo "export PATH=$JAVA_HOME/bin:$PATH" >> /etc/profile && \
+    echo "JAVA_HOME=$JAVA_HOME" >> /etc/environment
 
 # Install Allure CLI globally
-RUN npm install -g allure-commandline --save-dev
+RUN npm install -g allure-commandline
 
-# Ensure Playwright browsers are installed inside the image
-RUN npx playwright install --with-deps
+# Verify installations (optional, safe to remove in prod to keep image smaller)
+RUN bash -lc "java -version && node -v && npx playwright --version && allure --version"
 
-# Verify installations (optional)
-RUN java -version && node -v && npx playwright --version && allure --version
-
-# Set default working directory
+# Set workdir
 WORKDIR /app
 
-# Keep container alive in CI (GitHub Actions will exec into it)
+# Keep container alive in CI/CD (overridden by CMD in pipeline/test run)
 CMD ["sleep", "infinity"]
