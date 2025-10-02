@@ -23,10 +23,9 @@ RUN npm install -g allure-commandline --save-dev
 # Set working directory
 WORKDIR /app
 
-# CMD: Print versions once, then sleep forever (container stays alive)
+# Default CMD: Print versions of all installed tools and exit
 CMD bash -c "java -version 2>&1 | head -n1 && \
              node -v && \
              npm -v && \
              playwright --version && \
-             allure --version && \
-             sleep infinity"
+             allure --version"
