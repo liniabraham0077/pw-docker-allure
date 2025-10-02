@@ -23,10 +23,14 @@ RUN npm install -g allure-commandline --save-dev
 # Set working directory
 WORKDIR /app
 
-# CMD: Print versions once, then sleep forever (container stays alive)
-CMD bash -c "java -version 2>&1 | head -n1 && \
-             node -v && \
-             npm -v && \
-             playwright --version && \
-             allure --version && \
-             sleep infinity"
+# Create a script to print versions of tools
+RUN echo '#!/bin/bash' > /usr/local/bin/print-versions && \
+    echo 'echo "Java: $(java -version 2>&1 | head -n1)"' >> /usr/local/bin/print-versions && \
+    echo 'echo "Node: $(node -v)"' >> /usr/local/bin/print-versions && \
+    echo 'echo "NPM: $(npm -v)"' >> /usr/local/bin/print-versions && \
+    echo 'echo "Playwright: $(playwright --version)"' >> /usr/local/bin/print-versions && \
+    echo 'echo "Allure: $(allure --version)"' >> /usr/local/bin/print-versions && \
+    chmod +x /usr/local/bin/print-versions
+
+# Default CMD keeps container alive
+CMD ["sleep", "infinity"]
