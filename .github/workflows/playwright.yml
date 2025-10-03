@@ -17,7 +17,7 @@ jobs:
     container:
       # image: lini007/playwright-allure:latest
       image: lini007/playwright-rhel:latest
-      options: --ipc=host
+      options: --pull always --ipc=host
     env:
       HOME: /root # Fix for Firefox HOME issue
 
