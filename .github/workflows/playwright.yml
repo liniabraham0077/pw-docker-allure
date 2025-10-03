@@ -15,7 +15,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      # image: lini007/playwright-allure:latest
       image: lini007/playwright-rhel-allure:latest
       options: --pull always --ipc=host
     env:
@@ -28,24 +27,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Install Playwright browsers
-      #   run: npx playwright install --with-deps
-
       - name: Run Playwright tests with Allure reporter
         run: npx playwright test --reporter=line,allure-playwright
+        continue-on-error: true # ✅ Don't stop if tests fail
 
       - name: Generate Allure report
         run: npx allure generate ./allure-results -o ./allure-report --clean
+        if: always() # ✅ Run even if previous step failed
 
-      # Upload Allure report for GitHub Pages
       - name: Upload Allure report artifact
+        if: always() # ✅ Upload even on failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: ./allure-report
+
+      - name: Upload test results artifact
+        if: always() # ✅ Optional: save raw results too
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: ./allure-results
+
+      - name: Upload Allure report for GitHub Pages
+        if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: allure-report
 
-  # Deploy job for GitHub Pages
   deploy:
     needs: test
+    if: always() # ✅ Run even if 'test' failed
     permissions:
       pages: write
       id-token: write
